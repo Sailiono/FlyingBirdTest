@@ -51,7 +51,7 @@ int main(void)
 	AT24CXX_Init();			//IIC初始化
 	//HALL_Init();							
 
-   // motor_steering_init();  //初始化油门电机控制信号 
+    //motor_steering_init();  //初始化油门电机控制信号 
 	while(SD_Init()!=0){printf("sd");};                 //初始化SD卡
 	while(exfuns_init()!=0){printf("02");};			    //为fatfs相关变量申请内存				 
 	while(f_mount(fs[0],"0:",1)!=0){printf("03");}; 	//挂载SD卡 
