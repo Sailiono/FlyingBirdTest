@@ -1,6 +1,6 @@
 #ifndef __LED_H
 #define __LED_H
-
+#include "main.h"
 
 /**************************************************************************
 Copyright
@@ -34,7 +34,7 @@ History:
 
 
 //////////////////////////////////////////////////////////////////////////////////全局函数声明
-void LEDInit(void);   //LED初始化接口	
+void LED_Init(void);   //LED初始化接口	
 void ReverseRunningLED(void);//程序运行指示灯接口
 void LEDModeIndication(u8 mode);//飞行模式指示灯接口
 void LED1On(void);
@@ -43,7 +43,7 @@ void LED2On(void);
 void LED2Off(void);
 void LED3On(void);
 void LED3Off(void);
-		
+void Led_Flash(int8_t a);
 
 #endif
 

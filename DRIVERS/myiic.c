@@ -13,6 +13,9 @@
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	
 
+#define SCL_PIN GPIO_Pin_8
+#define SDA_PIN GPIO_Pin_9
+
 //初始化IIC
 void IIC_Imu_Init(void)
 {			
@@ -27,7 +30,6 @@ void IIC_Imu_Init(void)
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化
-	
 	IIC_Imu_SCL=1;
 	IIC_Imu_SDA=1;
 }
@@ -106,7 +108,7 @@ void IIC_Rom_Start(void)
 void IIC_Imu_Stop(void)
 {
 	SDA_Imu_OUT();//sda线输出
-	IIC_Imu_SCL=0;
+	IIC_Imu_SCL=1;
 	IIC_Imu_SDA=0;//STOP:when CLK is high DATA change form low to high
  	delay_us(4);
 	IIC_Imu_SCL=1; 
@@ -142,9 +144,9 @@ void IIC_Rom_Stop(void)
 u8 IIC_Imu_Wait_Ack(void)
 {
 	u8 ucErrTime=0;
-	SDA_Imu_IN();      //SDA设置为输入  
-	IIC_Imu_SDA=1;delay_us(1);	   
-	IIC_Imu_SCL=1;delay_us(1);	 
+	SDA_Imu_IN();      //SDA设置为输入
+	IIC_Imu_SDA=1;delay_us(1);
+	IIC_Imu_SCL=1;delay_us(1);
 	while(READ_Imu_SDA)
 	{
 		ucErrTime++;
@@ -199,7 +201,7 @@ u8 IIC_Rom_Wait_Ack(void)
 //产生ACK应答
 void IIC_Imu_Ack(void)
 {
-	IIC_Imu_SCL=0;
+	//IIC_Imu_SCL=0;
 	SDA_Imu_OUT();
 	IIC_Imu_SDA=0;
 	delay_us(2);
@@ -233,7 +235,7 @@ void IIC_Rom_Ack(void)
 //不产生ACK应答		    
 void IIC_Imu_NAck(void)
 {
-	IIC_Imu_SCL=0;
+	//IIC_Imu_SCL=0;
 	SDA_Imu_OUT();
 	IIC_Imu_SDA=1;
 	delay_us(2);
@@ -275,9 +277,9 @@ void IIC_Imu_Send_Byte(u8 txd)
     IIC_Imu_SCL=0;//拉低时钟开始数据传输
     for(t=0;t<8;t++)
     {              
-        IIC_Imu_SDA=(txd&0x80)>>7;
-        txd<<=1; 	  
-		delay_us(2);    
+		IIC_Imu_SDA=(txd&0x80)>>7;
+		txd<<=1; 	  
+		delay_us(2);
 		IIC_Imu_SCL=1;
 		delay_us(2); 
 		IIC_Imu_SCL=0;	
@@ -436,6 +438,7 @@ u8 IIC_Rom_ReadLenByteWithoutReg(u8 addr,u8 len,u8 *buf)
 	}    
 	IIC_Rom_Stop(); //产生一个停止条件 
 	return 0;	
+	
 }
 
 

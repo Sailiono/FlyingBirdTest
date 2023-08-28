@@ -1,7 +1,7 @@
 #include "sdio_sdcard.h"
 #include "string.h"	 
 #include "sys.h"	 
-#include "usart.h"	 
+#include "usart.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F407开发板
@@ -97,30 +97,30 @@ SD_Error SD_Init(void)
 	GPIO_PinAFConfig(GPIOC,GPIO_PinSource9,GPIO_AF_SDIO);
 	GPIO_PinAFConfig(GPIOC,GPIO_PinSource10,GPIO_AF_SDIO);
 	GPIO_PinAFConfig(GPIOC,GPIO_PinSource11,GPIO_AF_SDIO);
-	GPIO_PinAFConfig(GPIOC,GPIO_PinSource12,GPIO_AF_SDIO);	
-	GPIO_PinAFConfig(GPIOD,GPIO_PinSource2,GPIO_AF_SDIO);	
-	printf("SdGpioSetOK");
+	GPIO_PinAFConfig(GPIOC,GPIO_PinSource12,GPIO_AF_SDIO);
+	GPIO_PinAFConfig(GPIOD,GPIO_PinSource2,GPIO_AF_SDIO);
+	//printf("SdGpioSetOK");
 	
 	RCC_APB2PeriphResetCmd(RCC_APB2Periph_SDIO, DISABLE);//SDIO结束复位
-	printf("SdioResetOK");
+	//printf("SdioResetOK");
 		
- 	//SDIO外设寄存器设置为默认值 			   
+ 	//SDIO外设寄存器设置为默认值
 	SDIO_Register_Deinit();
-	printf("SdResResetOK");
+	//printf("SdResResetOK");
 	
 	NVIC_InitStructure.NVIC_IRQChannel = SDIO_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=0;//抢占优先级3
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority =0;		//子优先级3
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			//IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	//根据指定的参数初始化VIC寄存器、
-	printf("SdNvicSetOK");
+	//printf("SdNvicSetOK");
 	
    	errorstatus=SD_PowerON();	
-	printf("SdPowerOn");	//SD卡上电
- 	if(errorstatus==SD_OK)printf("SdInitOK");errorstatus=SD_InitializeCards();			//初始化SD卡	
+	//printf("SdPowerOn");	//SD卡上电
+ 	if(errorstatus==SD_OK)errorstatus=SD_InitializeCards();			//初始化SD卡	
 	
-  	if(errorstatus==SD_OK)printf("SdCardInfoOK");errorstatus=SD_GetCardInfo(&SDCardInfo);	//获取卡信息
- 	if(errorstatus==SD_OK)printf("SdSelected");errorstatus=SD_SelectDeselect((u32)(SDCardInfo.RCA<<16));//选中SD卡   
+  	if(errorstatus==SD_OK)errorstatus=SD_GetCardInfo(&SDCardInfo);	//获取卡信息
+ 	if(errorstatus==SD_OK)errorstatus=SD_SelectDeselect((u32)(SDCardInfo.RCA<<16));//选中SD卡   
 	
    	if(errorstatus==SD_OK)errorstatus=SD_EnableWideBusOperation(SDIO_BusWide_4b);	//4位宽度,如果是MMC卡,则不能用4位模式 
   	if((errorstatus==SD_OK)||(SDIO_MULTIMEDIA_CARD==CardType))
@@ -133,9 +133,9 @@ SD_Error SD_Init(void)
 		//errorstatus=SD_SetDeviceMode(SD_DMA_MODE);	//设置为DMA模式
 		errorstatus=SD_SetDeviceMode(SD_POLLING_MODE);//设置为查询模式
  	}
-	if(errorstatus==SD_OK)printf("SdAllOK");
-	return errorstatus;		 
+	return errorstatus;
 }
+
 //SDIO时钟初始化设置
 //clkdiv:时钟分频系数
 //CK时钟=SDIOCLK/[clkdiv+2];(SDIOCLK时钟固定为48Mhz)

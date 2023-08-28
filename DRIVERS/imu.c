@@ -4,7 +4,7 @@
 #include "flight_log.h"
 #include <math.h>
 #include <stdio.h>
-//#include "led.h"
+#include "led.h"
 
 
 
@@ -14,18 +14,18 @@ void IMU_Init(void)
 { 
 	GPIO_InitTypeDef  GPIO_InitStructure;
  
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);//使能GPIOE时钟
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE, ENABLE);			//使能GPIOE时钟
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2;//PE0~2
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;//输出
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;//推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100MHz
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;//上拉
-	GPIO_Init(GPIOE, &GPIO_InitStructure);//初始化
-	ACC_CS=1;											//PE0输出1,不使用自带加速度计
-	GYRO_CS=1;											//陀螺仪片选置1
-	MAG_CS=1;											//磁力计片选置1
-	SPI1_Init();		   								//初始化SPI
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2;	//PE0~2
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;					//输出
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;					//推挽输出
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;				//100MHz
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;					//上拉
+	GPIO_Init(GPIOE, &GPIO_InitStructure);							//初始化
+	ACC_CS=1;														//PE0输出1,不使用自带加速度计
+	GYRO_CS=1;														//陀螺仪片选置1
+	MAG_CS=1;														//磁力计片选置1
+	SPI1_Init();		   											//初始化SPI
 	
 	SPI_Write(BMX055_GYRO_BGW_SOFTRESET,0xB6,GYRO);
 	delay_ms(10);
@@ -34,32 +34,25 @@ void IMU_Init(void)
 	SPI_Write(BMX055_GYRO_LPM1,0x00,GYRO);
 	SPI_Write(BMX055_GYRO_RATE_HBW,0x00,GYRO);//config Gyro
 	
-	SPI_Write(BMX055_MAG_PWR_CNTL1,0x82,MAG);  // Softreset magnetometer
+	SPI_Write(BMX055_MAG_PWR_CNTL1,0x82,MAG);  // softreset magnetometer
 	delay_ms(10);
 	SPI_Write(BMX055_MAG_PWR_CNTL1,0x01,MAG); // set to sleep mode, it's needed for state transit
 	delay_ms(10);
 	SPI_Write(BMX055_MAG_PWR_CNTL2,MODR_30Hz + 0x00,MAG); // Normal mode, 30hz
-	IMU_Led_Flash(3);
-	delay_ms(500);
-	int8_t a;
+	Led_Flash(3);
+	//delay_ms(500);
+	int64_t a;
 	a= SPI_Read(BMX055_GYRO_WHOAMI,1,GYRO);
-	if(a==0x0F){IMU_Led_Flash(2);}
+	if(a==0x0F){Led_Flash(2);}
 	delay_ms(10);
 	a= SPI_Read(BMX055_MAG_WHOAMI,1,MAG);
-	if(a==0x32){IMU_Led_Flash(2);}
+	if(a==0x32){Led_Flash(2);}
 	delay_ms(500);
 	
-	//SPI1_SetSpeed(SPI_BaudRatePrescaler_16);		//设置为7.5M时钟,高速模式
-	//GYR_BIST();
+//	SPI1_SetSpeed(SPI_BaudRatePrescaler_16);						//设置为7.5M时钟,高速模式
+//	GYR_BIST();
 }
 
-
-void IMU_Led_Flash(int8_t a)
-{
-	if(a == 1){LED1On();delay_ms(500);LED1Off();delay_ms(500);LED1On();delay_ms(500);LED1Off();}
-	else if(a == 2){LED2On();delay_ms(500);LED2Off();delay_ms(500);LED2On();delay_ms(500);LED2Off();}
-	else if(a == 3){LED3On();delay_ms(500);LED3Off();delay_ms(500);LED3On();delay_ms(500);LED3Off();}
-}
 
 //写入IMU的数据，数据来源（可配置为GYR、MAG)
 /*void IMU_Write(u8 regAddr,u8 Value,u8 SensorSelec)   
@@ -87,7 +80,7 @@ void IMU_Led_Flash(int8_t a)
 
 void SPI_Write(u8 regAddr,u8 data,u8 SensorSelec)//寄存器写入
 {
-	u8 command = regAddr | Write;
+	u8 command = regAddr;
     if(SensorSelec == GYRO)GYRO_CS=0;else if(SensorSelec == MAG)MAG_CS=0;                          				//使能器件  
     SPI1_ReadWriteByte(command);
     SPI1_ReadWriteByte(data);
@@ -207,7 +200,7 @@ int64_t SPI_Read(u8 regAddr,u8 bytes_to_read,u8 SensorSelec)//寄存器读取
 
 
 
-void imu_task(void *param)
+void IMU_Task(void *param)
 {																																																		//定时器时钟，每隔1ms +1
 	u32 lastWakeTime	=	xTaskGetTickCount();//定时 
 	int8_t tempXLSB=0;
@@ -242,8 +235,8 @@ void imu_task(void *param)
 	while(1)
 	{
 		vTaskDelayUntil(&lastWakeTime, 50);																		/*10ms周期延时*/
-	//	flightloggerbutton=GetFlightLoggerState();
-//    if(flightloggerbutton == false)
+//		flightloggerbutton=GetFlightLoggerState();
+//		if(flightloggerbutton == false)
 //		{
 //		GPIO_SetBits(GPIOA,GPIO_Pin_5);
 //		}
@@ -253,11 +246,9 @@ void imu_task(void *param)
 			//printf("123");
            // if(flightloggerbutton == true)
             {
-				//printf("fg");
-				//WZHLED();
+				
                 sprintf((char*)logname_buf,"imu_%lld.txt",FreeRTOSRunTimeTicks);//打印数据文件名
 				//sprintf((char*)logname_buf,"ui.txt");
-//               sprintf((char*)logname_buf,"%02d.%02d.%02d.txt",gpsdata.gps_time.hours,gpsdata.gps_time.minutes,gpsdata.gps_time.seconds);
                 if(f_open(&flight_log_fil,logname_buf,FA_OPEN_APPEND|FA_WRITE)==0)
                 {
                     file_not_open_flag = false;
@@ -341,39 +332,49 @@ void imu_task(void *param)
 		if(!file_not_open_flag == true)
 		// if(!file_not_open_flag && flightloggerbutton == true)
         {
-//			printf("ssss");
-//          sprintf((char*)flight_log_buf,"%f %f %f %.2f %.2f %.2f %.2f,%.2f %.2f,%.2f,%.2f %.2f,%d,%lld\r\n",
-//                                euler_est.roll,euler_est.pitch,euler_est.yaw,
-//                                gpsdata.latitude,gpsdata.longitude,gpsdata.height,
-//								g_pos_est.x,g_pos_est.y,g_pos_est.z,
-//								g_pos_est.vx,g_pos_est.vy,g_pos_est.vz,
-//								flymode,
-//                                FreeRTOSRunTimeTicks); 
-			
-              //sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6507)/0.05575,wzhfre,wzhspeed);   //黄底
-              //sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6680)/0.0582,wzhfre,wzhspeed);   //白底带胶
-							//sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6450)/0.0580,wzhfre,wzhspeed);  //坏底无胶
-					    //sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.65)/0.0571,wzhfre,wzhspeed);  //L1
-					    //sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6537)/0.0570,wzhfre,wzhspeed);   //黄底N3
-				    	 // sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6464)/0.0562,wzhfre,wzhspeed);   //2 HAO
+
 			sprintf((char*)flight_log_buf,"%.4f ,%.4f ,%.4f,%.4f ,%.4f ,%.4f\r\n",sensor.gyro_x_float,sensor.gyro_y_float,sensor.gyro_z_float,sensor.mag_x_float,sensor.mag_y_float,sensor.mag_z_float);//写入flightlog
-            f_write(&flight_log_fil,flight_log_buf,strlen(flight_log_buf),&flight_log_bww); //写入内存卡
+			f_write(&flight_log_fil,flight_log_buf,strlen(flight_log_buf),&flight_log_bww); //写入内存卡
 			LED1On();
-//          printf("%d\r\n",FLAPPINGANGLE_POSITION);
+//			printf("%d\r\n",FLAPPINGANGLE_POSITION);
 							
-            //if(file_not_open_flag == false && flightloggerbutton == false)
-            //{
-                 //f_sync(&flight_log_fil);	//????????????,????
-                // file_not_open_flag = true;
-           // }                
+            /*if(file_not_open_flag == false && flightloggerbutton == false)
+            {
+				f_sync(&flight_log_fil);
+				file_not_open_flag = true;
+			}*/
             if(save_flag  %200==0)
             {
-                f_sync(&flight_log_fil);	//?????????? ????????
-                save_flag=0;
+				f_sync(&flight_log_fil);
+				save_flag=0;
             }
-            save_flag++;
+				save_flag++;
         
         }
 	}//end of while(1)
 
 }
+
+/*void Bmx_Convert_Data(struct Sensor *sensor){
+	// gyro convert, 16 bits
+	sensor->cov_tmp = ((int)sensor->gyro_x[1] << 8) | sensor->gyro_x[0];    // [0] is high bit, [1] is low bit
+	sensor->gyro_x_float = (float)sensor->cov_tmp * sensor->gyro_reso;
+	sensor->cov_tmp = ((int)sensor->gyro_y[1] << 8) | sensor->gyro_y[0];    // [0] is high bit, [1] is low bit
+	sensor->gyro_y_float = (float)sensor->cov_tmp * sensor->gyro_reso;
+	sensor->cov_tmp = ((int)sensor->gyro_z[1] << 8) | sensor->gyro_z[0];    // [0] is high bit, [1] is low bit
+	sensor->gyro_z_float = (float)sensor->cov_tmp * sensor->gyro_reso;
+	// accel convert, 12 bits
+	sensor->cov_tmp = (((int)sensor->accel_x[1] << 8) | sensor->accel_x[0]) >> 4;    // [0] is high bit, [1] is low bit
+	sensor->accel_x_float = (float)sensor->cov_tmp * sensor->accel_reso;
+	sensor->cov_tmp = (((int)sensor->accel_y[1] << 8) | sensor->accel_y[0]) >> 4;    // [0] is high bit, [1] is low bit
+	sensor->accel_y_float = (float)sensor->cov_tmp * sensor->accel_reso;
+	sensor->cov_tmp = (((int)sensor->accel_z[1] << 8) | sensor->accel_z[0]) >> 4;    // [0] is high bit, [1] is low bit
+	sensor->accel_z_float = (float)sensor->cov_tmp * sensor->accel_reso;
+	//mag convert, 13 bits for xy, 15 bits for z
+	sensor->cov_tmp = (((int)sensor->mag_x[1] << 8) | sensor->mag_x[0]) >> 3;    // [0] is high bit, [1] is low bit
+	sensor->mag_x_float = (float)sensor->cov_tmp * sensor->mag_reso;
+	sensor->cov_tmp = (((int)sensor->mag_y[1] << 8) | sensor->mag_y[0]) >> 3;    // [0] is high bit, [1] is low bit
+	sensor->mag_y_float = (float)sensor->cov_tmp * sensor->mag_reso;
+	sensor->cov_tmp = (((int)sensor->mag_z[1] << 8) | sensor->mag_z[0]) >> 1;    // [0] is high bit, [1] is low bit
+	sensor->mag_z_float = (float)sensor->cov_tmp * sensor->mag_reso;
+}*/

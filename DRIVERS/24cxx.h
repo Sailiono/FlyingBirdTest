@@ -1,6 +1,8 @@
 #ifndef __24CXX_H
 #define __24CXX_H
-#include "myiic.h"   
+#include "myiic.h"
+#include "main.h"
+
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F407开发板

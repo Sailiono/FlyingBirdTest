@@ -23,9 +23,10 @@ extern float wzhspeed;
 extern float wzhfre;
 // 定义一个交换缓冲区，用于存储AD采集数据，并用于写入SD
 u16 mesg [5] ={0};
-extern u16 mesg[5];     // ?????stm32???????
+extern u16 mesg[5];
+
 bool napo = 0;
-extern bool napo;       // ???????
+extern bool napo;
 
 /*
 *********************************************************************************************************
@@ -350,11 +351,11 @@ void ad_task(void *param)
 				
 		ad7606_StartConv();
 		temp = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_13);			 // ?? BUSY??? 
-	  while(temp == 1)				//?busy?????,??????,???????? 
+		while(temp == 1)				//?busy?????,??????,???????? 
 		{
 			temp = GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_13);		// ?? BUSY??? 	 
 		}	
-   AD7606_read_data(pp);
+		AD7606_read_data(pp);
 		
 		for(i=0;i<8;i++)
 		{

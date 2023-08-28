@@ -10,7 +10,7 @@
       <TargetName>Flight_Control_ljt_v3_xsens</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARM_Compiler_5.06u7</pCCUsed>
+      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\Arm Compiler 5.06</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -455,9 +455,19 @@
               <FilePath>..\DRIVERS\myiic.c</FilePath>
             </File>
             <File>
+              <FileName>adxrs290.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVERS\adxrs290.c</FilePath>
+            </File>
+            <File>
               <FileName>imu.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\DRIVERS\imu.c</FilePath>
+            </File>
+            <File>
+              <FileName>imu2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVERS\imu2.c</FilePath>
             </File>
           </Files>
         </Group>

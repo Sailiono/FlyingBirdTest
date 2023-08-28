@@ -24,11 +24,11 @@
 
 //IO操作函数	 
 #define IIC_Imu_SCL     PBout(8)                                            
-#define IIC_Imu_SDA     PBout(9)                                            	 
+#define IIC_Imu_SDA     PBout(9)                                            
 #define READ_Imu_SDA    PBin(9)                                             
 
 #define IIC_Wind_SCL    PEout(5)                                            
-#define IIC_Wind_SDA    PEout(6)                                            	 
+#define IIC_Wind_SDA    PEout(6)                                            
 #define READ_Wind_SDA   PEin(6)                                             
 
 #define IIC_Rom_SCL     PDout(3)                                            //SCL
@@ -57,7 +57,7 @@ u8 IIC_Wind_Read_Byte(unsigned char ack);
 u8 IIC_Rom_Read_Byte(unsigned char ack);                                    //IIC读取一个字节
 
 u8 IIC_Imu_Wait_Ack(void); 
-u8 IIC_Wind_Wait_Ack(void); 
+u8 IIC_Wind_Wait_Ack(void);
 u8 IIC_Rom_Wait_Ack(void); 				                                    //IIC等待ACK信号
 
 void IIC_Imu_Ack(void);
@@ -77,8 +77,8 @@ void IIC_Imu_Write_One_Byte(u8 daddr,u8 addr,u8 data);
 void IIC_Imu_Write_One_Byte(u8 daddr,u8 addr,u8 data);
 
 u8 IIC_Imu_Read_One_Byte(u8 daddr,u8 addr);
-u8 IIC_Wind_Read_One_Byte(u8 daddr,u8 addr);	
-u8 IIC_Rom_Read_One_Byte(u8 daddr,u8 addr);	
+u8 IIC_Wind_Read_One_Byte(u8 daddr,u8 addr);
+u8 IIC_Rom_Read_One_Byte(u8 daddr,u8 addr);
 #endif
 
 

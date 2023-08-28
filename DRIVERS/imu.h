@@ -4,7 +4,6 @@
 #include "main.h" 
 #include <stdio.h>
 
-void imu_Init(void);
 #define	ACC_CS 								PEout(0)  		//加速度计的片选信号
 #define	GYRO_CS 							PEout(1)  		//陀螺仪的片选信号
 #define	MAG_CS 								PEout(2)  		//磁力计的片选信号
@@ -12,7 +11,7 @@ void imu_Init(void);
 #define	MAG		    						2  		        //选择磁力计
 #define u8 									uint8_t
 #define	Read		    					0x80
-#define	Write		    					0x00
+
 
 // BMX055 Gyroscope Registers, i2c address is 0x68
 #define BMX055_GYRO_WHOAMI           0x00  // should return 0x0F
@@ -137,22 +136,22 @@ enum MODR {
   MODR_30Hz = 0x38       // 30 Hz ODR
 };
 
-
-
 void IMU_Init(void);
+
 void IMU_Write(unsigned char RegAddr,unsigned char Value,unsigned char SensorSelec);
+
 void IMU_Read(unsigned char regAddr,unsigned char *readData,unsigned char SensorSelec);
+
 u8 IMU_Write_Buf(u8 reg,u8 *pBuf,u8 len,u8 SensorSelec);
+
 u8 IMU_Read_Buf(u8 reg,u8 *pBuf,u8 len,u8 SensorSelec);
-u8 GYR_BIST(void);
-void imu_task(void *param);
+
+void IMU_Task(void *param);
+
 //void gyro_task(void *param);
 //void mag_task(void *param);
 //void Bmx_Convert_Data(struct Sensor *sensor);
 void Gyro_Read_Data(unsigned char *x, unsigned char *y, unsigned char *z);
-
-//void GYR_SetRange(void);
-void IMU_Led_Flash(int8_t a);
 
 int64_t SPI_Read(u8 regAddr,u8 bytes_to_read,u8 SensorSelec);
 void SPI_Write(u8 regAddr,u8 data,u8 SensorSelec);

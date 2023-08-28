@@ -23,7 +23,7 @@ RcRawDataSTypeDef myrc;
 /*
  * SBUS初始化
  */
-void SbusInit(void)
+void Sbus_Init(void)
 {
 	//定义结构体
 	GPIO_InitTypeDef GPIO_InitStructure;

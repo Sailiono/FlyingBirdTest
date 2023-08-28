@@ -58,7 +58,7 @@ extern RcRawDataSTypeDef myrc;
 
 //////////////////////////////////////////////////////////////////////////////////全局函数声明
 
-void SbusInit(void);
+void Sbus_Init(void);
 void sbus_task(void *param);
 void GetRcValue(RcRawDataSTypeDef* get);
 bool GetFlightLoggerState(void);

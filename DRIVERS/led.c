@@ -31,7 +31,7 @@ History:
 /*
  * LED初始化接口
  */
-void LEDInit(void)
+void LED_Init(void)
 {    	 
     GPIO_InitTypeDef  GPIO_InitStructure;
     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
@@ -98,6 +98,14 @@ void LED3Off(void)
 {
 	GPIO_SetBits(GPIOD,GPIO_Pin_15);
 }
+
+void Led_Flash(int8_t a)
+{
+	if(a == 1){LED1On();delay_ms(500);LED1Off();delay_ms(500);LED1On();delay_ms(500);LED1Off();}
+	else if(a == 2){LED2On();delay_ms(500);LED2Off();delay_ms(500);LED2On();delay_ms(500);LED2Off();}
+	else if(a == 3){LED3On();delay_ms(500);LED3Off();delay_ms(500);LED3On();delay_ms(500);LED3Off();}
+}
+
 
 /*
 飞行模式指示灯接口
