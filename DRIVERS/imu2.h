@@ -1,12 +1,10 @@
 #ifndef __IMU2_H
 #define __IMU2_H
-#endif
 
+#include "stm32f4xx.h" 
+#include <stdbool.h>
 #include "sys.h"
-#include "delay.h"
-#include "flight_log.h"
-#include "myiic.h"
-#include "led.h"
+
 
 // Using of HP203B sensor (0:don't use,1:use)
 #define ADXL357B_USAGE	1
@@ -49,13 +47,13 @@ typedef enum {
     TEN_G = 1,
     TWENTY_G,
     FOURTY_G,
-} Acc_Range;
+}Acc_Range;
 
 
 #ifndef HP203B_H_
 #define HP203B_H_
 //Aux Barometer and Altimeter define
-#define HP203B_USAGE	1		// Using of HP203B sensor (0:don't use,1:use)
+#define HP203B_USAGE	0		// Using of HP203B sensor (0:don't use,1:use)
 
 #define HP203B_Addr  				0x77 // CSB low,the 7bit address of HP203B
 
@@ -193,29 +191,28 @@ typedef struct {
 //Accelerator
 #if ADXL357B_USAGE
 
-uint8_t ADXL357B_Reset(void);
+u8 ADXL357B_Reset(void);
 
-uint8_t ADXL357B_Init(void);
+u8 ADXL357B_Init(void);
 
 /** set action enable.
     @param enable_x enable x axis action.When the x axis result above threshold,trigger event.
     @param enable_y enable y axis action.When the y axis result above threshold,trigger event.
     @param enable_z enable z axis action.When the z axis result above threshold,trigger event.
  **/
-int32_t ADXL357B_SetActEnable(bool enable_x, bool enable_y, bool enable_z);
 
 /** Read x/y/z axis data from register.
 
  **/
-int32_t ADXL357B_ReadXYZAxisResultData(int32_t *x, int32_t *y, int32_t *z);
+int * ADXL357B_ReadXYZAxisResultData(void);
 /** Config ADXL357 mode.
     bit2 - DRDY_OFF ,
     bit1 - TEMP-OFF ,
     bit0 - running mode,0 for measurement mode,1 for standby mode.
  **/
-uint8_t ADXL357B_SetPowerCtr(u8 val);
+u8 ADXL357B_SetPowerCtr(u8 val);
 
-int32_t ADXL357B_ReadTemperature(float T);
+int ADXL357B_ReadTemperature(float T);
 
 /** Get status register data.
     bit4 - NVM-BUSY
@@ -224,32 +221,32 @@ int32_t ADXL357B_ReadTemperature(float T);
     bit1 - FIFO_FULL
     bit0 - DATA_RDY
  **/
-int32_t ADXL357B_GetStatus(u8 byte);
+u8 ADXL357B_GetStatus(void);
 /** Check whether the  status register's first bit is 1.
  **/
 bool ADXL357B_CheckDataReady(void);
 
-uint8_t ADXL357B_SetFilter(u8 val);
+u8 ADXL357B_SetFilter(u8 val);
 /** Set ADXL357's full scale range.
     ¡À10g,¡À20g,¡À40g
  **/
-int32_t ADXL357B_SetRange(Acc_Range range);
+u8 ADXL357B_SetRange(Acc_Range range);
 /** Read x/y/z axis data from FIFO.
 
  **/
-int32_t ADXL357B_ReadXYZAxisResultDataFromFIFO(int32_t *x, int32_t *y, int32_t *z) ;
+int ADXL357B_ReadXYZAxisResultDataFromFIFO(int32_t *x, int32_t *y, int32_t *z) ;
 
 /** Set threshold,when measured result over than threshold,trigger event,if corresponding INT function has enabled,trigger interruct event.
     @param acc_g The threshold value,unit is g.
     @param factory Acceleration value corresponding to one acceleration result value,the result value is read from register.
 
  **/
-int32_t ADXL357B_setActThreshold(float acc_g, float factory);
+u8 ADXL357B_SetActEnable(bool enable_x, bool enable_y, bool enable_z);
 
 /** Event count.event count incresed when axis result value over than threshold.
 
  **/
-int32_t ADXL357B_GetActiveCnt(void);
+u8 ADXL357B_GetActiveCnt(void);
 
 #endif
 
@@ -287,4 +284,4 @@ u8 IMU2_Read_Reg(u8 dev_Addr,u8 reg);
 
 u8 IMU2_Write_Byte(u8 dev_Addr,u8 command);
 
-
+#endif

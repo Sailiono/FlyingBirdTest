@@ -9,7 +9,6 @@
 *********************************************************************************************************
 */
 
-#include "main.h"
 #include "spi.h"
 #include <stdio.h>
 #include "bsp_spi_ad7606.h"
@@ -18,6 +17,13 @@
 #include "led.h"
 #include "flight_log.h"
 #include "sbus.h"
+#include "string.h"
+#if SYSTEM_SUPPORT_OS
+#include "FreeRTOS.h"					//FreeRTOS使用		  
+#include "task.h"
+#endif
+#include "exfuns.h"
+
 extern FIFO_T wzh;
 extern float wzhspeed;
 extern float wzhfre;
@@ -148,6 +154,9 @@ void bsp_InitAD7606(void)
 	GPIO_SetBits(GPIOA,GPIO_Pin_11);	/* CONVST脚设置为高电平 PA11*/	
 	GPIO_SetBits(GPIOE,GPIO_Pin_4); /* clk脚设置为高电平 PE4*/
 	// ad7606_StartConv();
+	ad7606_Reset();
+	GPIO_SetBits(GPIOD,GPIO_Pin_0);
+	ad7606_Reset();
 
 		
 }
@@ -371,13 +380,13 @@ void ad_task(void *param)
 		// if(!file_not_open_flag && flightloggerbutton == true)
         {
 //			printf("ssss");
-//            sprintf((char*)flight_log_buf,"%f %f %f %.2f %.2f %.2f %.2f,%.2f %.2f,%.2f,%.2f %.2f,%d,%lld\r\n",
-//                                euler_est.roll,euler_est.pitch,euler_est.yaw,
-//                                gpsdata.latitude,gpsdata.longitude,gpsdata.height,
-//								g_pos_est.x,g_pos_est.y,g_pos_est.z,
-//								g_pos_est.vx,g_pos_est.vy,g_pos_est.vz,
-//								flymode,
-//                                FreeRTOSRunTimeTicks); 
+//       	sprintf((char*)flight_log_buf,"%f %f %f %.2f %.2f %.2f %.2f,%.2f %.2f,%.2f,%.2f %.2f,%d,%lld\r\n",
+//                                	uler_est.roll,euler_est.pitch,euler_est.yaw,
+//                               	gpsdata.latitude,gpsdata.longitude,gpsdata.height,
+//									g_pos_est.x,g_pos_est.y,g_pos_est.z,
+//									g_pos_est.vx,g_pos_est.vy,g_pos_est.vz,
+//									flymode,
+//                                	FreeRTOSRunTimeTicks); 
 					
               //sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6507)/0.05575,wzhfre,wzhspeed);   //黄底
               //sprintf((char*)flight_log_buf,"%.4f ,%.4f ,flapping speed is %.4f ,airspeed is %.4f \r\n",gg[0]*4.92,(gg[1]-1.6680)/0.0582,wzhfre,wzhspeed);   //白底带胶
@@ -388,7 +397,7 @@ void ad_task(void *param)
 			sprintf((char*)flight_log_buf,"%.4f ,%.4f\r\n",gg[0]*4.92f,(gg[1]-1.6565f)/0.0563f);   //输入采集数据到飞行日志
             f_write(&flight_log_fil,flight_log_buf,strlen(flight_log_buf),&flight_log_bww);       //写入SD卡
 			LED2On();
-//            printf("%d\r\n",FLAPPINGANGLE_POSITION);
+//          printf("%d\r\n",FLAPPINGANGLE_POSITION);
 							
             //if(file_not_open_flag == false && flightloggerbutton == false)
             //{

@@ -469,6 +469,16 @@
               <FileType>1</FileType>
               <FilePath>..\DRIVERS\imu2.c</FilePath>
             </File>
+            <File>
+              <FileName>wind.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVERS\wind.c</FilePath>
+            </File>
+            <File>
+              <FileName>rtc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVERS\rtc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

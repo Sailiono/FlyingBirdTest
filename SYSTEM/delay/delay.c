@@ -92,6 +92,24 @@ void delay_xms(u32 nms)
 	for(i=0;i<nms;i++) delay_us(1000);
 }
 
+//延时s,可以使用小数
+void delay_s(float s)
+{
+	int i = 0;
+	int I = 0,F = 0;
+	I = (int)s;
+	F = (s- I)*1000;
+	if(I !=0)
+	{
+		for(i =0;i <I;i++)
+		{
+			delay_ms(1000);
+		
+		}
+	}
+	if(F !=0){delay_us(F);}
+
+}
 			 
 
 

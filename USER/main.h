@@ -9,32 +9,6 @@
 
 //#include "motor_steering.h"
 //#include "motor_steering_control.h"
-#define u8 							uint8_t
-#define u16 						uint16_t
-#define u32 						uint32_t
-#define u64 						uint64_t
-#define s8 							int8_t
-#define s16 						int16_t
-
-#include "sys.h"
-#include "delay.h"
-#include "usart.h"
-#include "led.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
-#include "projdefs.h"
-#include "sbus.h"
-#include "exfuns.h"
-#include "string.h"
-#include "timer.h"
-//#include "labview.h"
-#include "2stm.h"
-#include "myiic.h"
-#include "DataTypeDefine.h"
-#include "24cxx.h"
-#include "windspeed.h"
-//#include "hall.h"
 
 #define THROTTLE_MIN 352.0f
 #define THROTTLE_MAX 1696.0f

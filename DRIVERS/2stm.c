@@ -1,4 +1,9 @@
 #include "2stm.h"
+
+#include "FreeRTOS.h"					//FreeRTOS π”√		  
+#include "task.h"
+#include "delay.h"
+
 extern bool napo;
 extern u16 mesg[5];
 

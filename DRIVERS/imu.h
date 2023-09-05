@@ -1,7 +1,6 @@
 #ifndef __IMU_H
 #define __IMU_H			    
 #include "sys.h"
-#include "main.h" 
 #include <stdio.h>
 
 #define	ACC_CS 								PEout(0)  		//加速度计的片选信号

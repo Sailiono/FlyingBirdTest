@@ -1,7 +1,17 @@
 #include "imu2.h"
+#include "sys.h"
+#include "delay.h"
+#include "flight_log.h"
+#include "myiic.h"
+#include "led.h"
+#include "exfuns.h"
+#include "string.h"
+#if SYSTEM_SUPPORT_OS
+#include "FreeRTOS.h"					//FreeRTOS使用		  
+#include "task.h"
+#endif
 
-
-
+#define return_err -1
 
 /* PUBLIC VARIABLES ================================================================================================================================ */
 HP203x_TH_TypeDef		HP203B_TH_Struct;
@@ -17,34 +27,31 @@ int IMU2_Init(void) {
 		ADXL357B_Init();
 	}
 	if(HP203B_USAGE){
-		HP203B_Init(&HP203B_CR_Struct, &HP203B_TH_Struct);
+		//HP203B_Init(&HP203B_CR_Struct, &HP203B_TH_Struct);
 	}
 	return 0;
 }
-
-
-
 
 
 u8 ADXL357B_Reset(void)
 {
 	u8 reset_code = 0x52;  // Datasheet P.40
 
-	return IMU2_Write_Reg(ACC_I2C_ADDRESS,RESET_REG_ADDR,reset_code);
+	return IMU2_Write_Reg(ACC_I2C_ADDRESS, RESET_REG_ADDR, reset_code);
 }
 
-s32 ADXL357B_SetRange(Acc_Range range) {
+u8 ADXL357B_SetRange(Acc_Range range) {
 	u8 orig = 0;
-	orig = IMU2_Read_Reg(ACC_I2C_ADDRESS,SET_RANGE_REG_ADDR);
+	orig = IMU2_Read_Reg(ACC_I2C_ADDRESS, SET_RANGE_REG_ADDR);
 	orig |= range;
-	return IMU2_Write_Reg(ACC_I2C_ADDRESS,SET_RANGE_REG_ADDR, orig);
+	return IMU2_Write_Reg(ACC_I2C_ADDRESS, SET_RANGE_REG_ADDR, orig);
 }
 
 u8 ADXL357B_SetFilter(u8 val)
 {
 	u8 filter_setcode = val;  // Datasheet P.38
 
-	return IMU2_Write_Reg(ACC_I2C_ADDRESS,FILTER_REG_ADDR, filter_setcode);
+	return IMU2_Write_Reg(ACC_I2C_ADDRESS, FILTER_REG_ADDR, filter_setcode);
 }
 
 
@@ -54,16 +61,16 @@ u8 ADXL357B_SetPowerCtr(u8 val)
 {
 	u8 powerctr_setcode = val;  // Datasheet P.38
 
-	return IMU2_Write_Reg(ACC_I2C_ADDRESS,POWER_CTR_REG_ADDR, powerctr_setcode);
+	return IMU2_Write_Reg(ACC_I2C_ADDRESS, POWER_CTR_REG_ADDR, powerctr_setcode);
 }
 
-s32 ADXL357B_GetActiveCnt(void) {
+u8 ADXL357B_GetActiveCnt(void) {
 	u8 cnt = 0;
-	cnt = IMU2_Read_Reg(ACC_I2C_ADDRESS,GET_ACTIVE_COUNT_REG_ADDR);
+	cnt = IMU2_Read_Reg(ACC_I2C_ADDRESS, GET_ACTIVE_COUNT_REG_ADDR);
 	return cnt;
 }
 
-s32 ADXL357B_SetActThreshold(float acc_g, float factory) {
+u8 ADXL357B_SetActThreshold(float acc_g, float factory) {
 	int16_t thres = 0;
 	thres = (int16_t)(acc_g / factory);
 	thres >>= 3;
@@ -72,7 +79,7 @@ s32 ADXL357B_SetActThreshold(float acc_g, float factory) {
 	u8* buf ={0};
 	buf[0] = (u8)(thres >>8);
 	buf[1] = (u8)(thres);
-	return IMU2_Write_Len(ACC_I2C_ADDRESS,SET_THRESHOLD_REG_ADDR,2,buf);
+	return IMU2_Write_Len(ACC_I2C_ADDRESS, SET_THRESHOLD_REG_ADDR, 2, buf);
 }
 
 /** set action enable.
@@ -80,16 +87,16 @@ s32 ADXL357B_SetActThreshold(float acc_g, float factory) {
 	@param enable_y enable y axis action.When the y axis result above threshold,trigger event.
 	@param enable_z enable z axis action.When the z axis result above threshold,trigger event.
  **/
-s32 ADXL357B_SetActEnable(bool enable_x, bool enable_y, bool enable_z) {
+u8 ADXL357B_SetActEnable(bool enable_x, bool enable_y, bool enable_z) {
 	u8 val = 0;
 	val = val | (enable_z << 2) | (enable_y << 1) | enable_x;
 	return IMU2_Write_Len(ACC_I2C_ADDRESS,ACTION_ENABLE_REG_ADDR, 1, &val);
 }
 
-s32 ADXL357B_ReadTemperature(float T) {
+int ADXL357B_ReadTemperature(float T) {
 	int16_t temperature = 0;
 	u8 *val = 0;
-	IMU2_Read_Len(ACC_I2C_ADDRESS,TEMPERATURE_REG_ADDR, 2, val);
+	IMU2_Read_Len(ACC_I2C_ADDRESS, TEMPERATURE_REG_ADDR, 2, val);
 	temperature = ((uint16_t)(val[0] & 0xf0)) | val[1];
 	if(T != 25 + (temperature - 1885) / (-9.05)){
 		T = 25 + (temperature - 1885) / (-9.05);
@@ -97,16 +104,16 @@ s32 ADXL357B_ReadTemperature(float T) {
 	return 0;
 }
 
-s32 ADXL357B_ReadXYZAxisResultDataFromFIFO(s32 *x, s32 *y, s32 *z) {
+int ADXL357B_ReadXYZAxisResultDataFromFIFO(s32 *x, s32 *y, s32 *z) {
 	u8 data[9] = {0};
 	*x = *y = *z = 0;
 
-	if (IMU2_Read_Len(ACC_I2C_ADDRESS,FIFO_DATA_REG_ADDR, 9, data)) {
+	if (IMU2_Read_Len(ACC_I2C_ADDRESS, FIFO_DATA_REG_ADDR, 9, data)) {
 		return -1;
 	}
-	*x = ((u32)data[0] << 12) | ((u32)data[1] << 4) | ((u32)data[2] >> 4);
-	*y = ((u32)data[3] << 12) | ((u32)data[4] << 4) | ((u32)data[5] >> 4);
-	*z = ((u32)data[6] << 12) | ((u32)data[7] << 4) | ((u32)data[8] >> 4);
+	*x = ((int)data[0] << 12) | ((int)data[1] << 4) | ((int)data[2] >> 4);
+	*y = ((int)data[3] << 12) | ((int)data[4] << 4) | ((int)data[5] >> 4);
+	*z = ((int)data[6] << 12) | ((int)data[7] << 4) | ((int)data[8] >> 4);
 
 	if (*x & 0x80000) {
 		*x = (*x & 0x7ffff) - 0x80000;
@@ -121,38 +128,39 @@ s32 ADXL357B_ReadXYZAxisResultDataFromFIFO(s32 *x, s32 *y, s32 *z) {
 	return 0;
 }
 
-s32 ADXL357B_ReadXYZAxisResultData(s32 *x, s32 *y, s32 *z) {
-	u8 data[9] = {0};
-	*x = *y = *z = 0;
+int * ADXL357B_ReadXYZAxisResultData(void) {
+	
+	static int *x =0;
+	u8 *data;
 
-	if (IMU2_Write_Len(ACC_I2C_ADDRESS,FIFO_DATA_REG_ADDR, 9, data)) {
-		return -1;
-	}
-	*x = ((u32)data[0] << 12) | ((u32)data[1] << 4) | ((u32)data[2] >> 4);
-	*y = ((u32)data[3] << 12) | ((u32)data[4] << 4) | ((u32)data[5] >> 4);
-	*z = ((u32)data[6] << 12) | ((u32)data[7] << 4) | ((u32)data[8] >> 4);
+	IMU2_Read_Len(ACC_I2C_ADDRESS, X_DATA_REG_ADDR, 9, data);
+	
+	*x = ((int)(*data) << 12) | ((int)(*(data+1)) << 4) | ((int)(*(data+2)) >> 4);
+	*(x +1) = ((int)(*(data+3)) << 12) | ((int)(*(data+4)) << 4) | ((int)(*(data+5)) >> 4);
+	*(x +2) = ((int)(*(data+6)) << 12) | ((int)(*(data+7)) << 4) | ((int)(*(data+8)) >> 4);
 
 	if (*x & 0x80000) {
 		*x = (*x & 0x7ffff) - 0x80000;
 	}
-	if (*y & 0x80000) {
-		*y = (*y & 0x7ffff) - 0x80000;
+	if (*(x +1) & 0x80000) {
+		*(x +1) = (*(x +1) & 0x7ffff) - 0x80000;
 	}
-	if (*z & 0x80000) {
-		*z = (*z & 0x7ffff) - 0x80000;
+	if (*(x +2) & 0x80000) {
+		*(x +2) = (*(x +2) & 0x7ffff) - 0x80000;
 	}
 
-	return 0;
+	return x;
 }
 
-s32 ADXL357B_GetStatus(u8 byte) {
+u8 ADXL357B_GetStatus(void) {
+	static u8 byte =0;
 	byte = IMU2_Read_Reg(ACC_I2C_ADDRESS,STATUS_REG_ADDR);
 	return byte;
 }
 
 bool ADXL357B_CheckDataReady(void) {
 	u8 stat = 0;
-	ADXL357B_GetStatus(stat);
+	stat = ADXL357B_GetStatus();
 	return stat & 0x01;
 }
 
@@ -165,7 +173,7 @@ bool ADXL357B_CheckDataReady(void) {
  * Initialize the structure of altitude offset and thresholds
  * - read comments for understanding values metric
  ***********************************************************/
-static void HP203B_TH_StructInit(HP203x_TH_TypeDef *HP203B_TH_InitStruct) {
+/*static void HP203B_TH_StructInit(HP203x_TH_TypeDef *HP203B_TH_InitStruct) {
 	HP203B_TH_InitStruct->ALT_OFF = 0;		// Altitude offset (cm)
 	HP203B_TH_InitStruct->P_H_TH  = 0;		// Pressure upper bound threshold (Pa)
 	HP203B_TH_InitStruct->P_M_TH  = 0;		// Pressure middle bound threshold (Pa)
@@ -177,13 +185,13 @@ static void HP203B_TH_StructInit(HP203x_TH_TypeDef *HP203B_TH_InitStruct) {
 	HP203B_TH_InitStruct->T_M_TH  = 0;		// Temperature middle bound threshold (°C)
 	HP203B_TH_InitStruct->T_L_TH  = 0;		// Temperature lower bound threshold (°C)
 	HP203B_TH_InitStruct->P_or_A  = 1;		// 0 for pressure, 1 for altitude
-}
+}*/
 
 /************************************************************
  * Initialize the HP203B control registers structure
  * - read comments for understanding changes which you are can adjust
  ***********************************************************/
-static void HP203B_CR_StructInit(HP203x_CR_TypeDef *HP203B_CR_InitStruct, HP203x_TH_TypeDef *HP203B_TH_Struct) {
+/*static void HP203B_CR_StructInit(HP203x_CR_TypeDef *HP203B_CR_InitStruct, HP203x_TH_TypeDef *HP203B_TH_Struct) {
 	HP203B_TH_StructInit(HP203B_TH_Struct);												// Configure the structure of HP203B thresholds
 	HP203B_CR_InitStruct->ALT_OFF_LSB = (u8)(HP203B_TH_Struct->ALT_OFF);			// Write LSB of altitude offset (1cm per count)
 	HP203B_CR_InitStruct->ALT_OFF_MSB = (u8)(HP203B_TH_Struct->ALT_OFF >> 8);		// Write MSB of altitude offset
@@ -243,7 +251,7 @@ static void HP203B_CR_StructInit(HP203x_CR_TypeDef *HP203B_CR_InitStruct, HP203x
 				0 << T_WIN_DIR;		// 1 if temperature above the window, 0 if temperature below the window
 
 	HP203B_CR_InitStruct->PARA = 1 << CMPS_EN;	// Enable/disable data compensation (0:disable,1:enable)
-}
+}*/
 
 /* PUBLIC FUNCTIONS ================================================================================================================================= */
 /************************************************************
@@ -376,8 +384,8 @@ With the following function, MCU gets data from imu2 in set frequency and store 
 void IMU2_Task(void *param)
 {
 	u32 lastWakeTime = xTaskGetTickCount();
-	s32 pp [3]={-1};
-	float gg[3]={-1};
+	int *pp;
+	float output[3]={-1};
 	u8 i;
 	u16 save_flag=0; 
 	static FIL flight_log_fil;
@@ -397,16 +405,16 @@ void IMU2_Task(void *param)
 				file_not_open_flag = false;
 			}
 		}
-		ADXL357B_ReadXYZAxisResultData(&pp[0] , &pp[1], &pp[2]);
+		pp = ADXL357B_ReadXYZAxisResultData();
 		
 		for(i=0;i<3;i++)
 		{
-		gg[i]=(float)((float)pp[i]/524288*10);
+		output[i]=(float)(*(pp + i))/524288*10;
 		}
 		 if(!file_not_open_flag == true)
 		// if(!file_not_open_flag && flightloggerbutton == true)
 		{
-			sprintf((char*)flight_log_buf,"%.4f ,%.4f,%.4f\r\n",gg[0],gg[1],gg[2]);
+			sprintf((char*)flight_log_buf,"%.4f , %.4f, %.4f\r\n",output[0],output[1],output[2]);
 			f_write(&flight_log_fil,flight_log_buf,strlen(flight_log_buf),&flight_log_bww);
 			LED3On();
 			if(save_flag  %200==0)
@@ -432,7 +440,7 @@ u8 IMU2_Write_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
 {
 	u8 i; 
 	IIC_Imu_Start(); 
-	IIC_Imu_Send_Byte((dev_Addr<<1)|0);
+	IIC_Imu_Send_Byte((dev_Addr<<1) | 0);
 	if(IIC_Imu_Wait_Ack())
 	{
 		IIC_Imu_Stop();
@@ -447,7 +455,7 @@ u8 IMU2_Write_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
 		{
 			IIC_Imu_Stop();
 			return 1;
-		}		
+		}
 	}
 	IIC_Imu_Stop();	 
 	return 0;	
@@ -462,26 +470,26 @@ u8 IMU2_Write_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
 u8 IMU2_Read_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
 { 
 	IIC_Imu_Start(); 
-	IIC_Imu_Send_Byte((dev_Addr<<1)|0);
-	if(IIC_Imu_Wait_Ack())
+	IIC_Imu_Send_Byte((dev_Addr<<1)|0);//发送器件地址+写命令	
+	if(IIC_Imu_Wait_Ack())	//等待应答
 	{
-		IIC_Imu_Stop();
-		return 1;
+		IIC_Imu_Stop();		 
+		return 1;		
 	}
-	IIC_Imu_Send_Byte(reg);
-	IIC_Imu_Wait_Ack();
-	IIC_Imu_Start();
-	IIC_Imu_Send_Byte((dev_Addr<<1)|1);
-	IIC_Imu_Wait_Ack();
+    IIC_Imu_Send_Byte(reg);	//写寄存器地址
+    IIC_Imu_Wait_Ack();		//等待应答
+    IIC_Imu_Start();
+	IIC_Imu_Send_Byte((dev_Addr<<1)|1);//发送器件地址+读命令	
+    IIC_Imu_Wait_Ack();		//等待应答 
 	while(len)
 	{
-		if(len==1)*buf=IIC_Imu_Read_Byte(0); 
-		else *buf=IIC_Imu_Read_Byte(1);
+		if(len==1)*buf=IIC_Imu_Read_Byte(0);//读数据,发送nACK 
+		else *buf=IIC_Imu_Read_Byte(1);		//读数据,发送ACK  
 		len--;
 		buf++; 
-	}
-	IIC_Imu_Stop();
-	return 0;
+	}    
+    IIC_Imu_Stop();	//产生一个停止条件 
+	return 0;	
 }
 //IIC写一个字节到寄存器 
 //reg:寄存器地址
@@ -490,21 +498,15 @@ u8 IMU2_Read_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
 //    其他,错误代码
 u8 IMU2_Write_Reg(u8 dev_Addr,u8 reg,u8 data)
 { 
+	u8 _addr_val = 0;
 	IIC_Imu_Start(); 
-	IIC_Imu_Send_Byte((dev_Addr << 1) | 0x00);
-	if(IIC_Imu_Wait_Ack())
-	{
-		IIC_Imu_Stop();
-		return 1;
-	}
+	_addr_val = (dev_Addr << 1) | 0;
+	IIC_Imu_Send_Byte(_addr_val);//发送器件地址，使用写指令
+	IIC_Imu_Wait_Ack();
 	IIC_Imu_Send_Byte(reg);
 	IIC_Imu_Wait_Ack();
 	IIC_Imu_Send_Byte(data);
-	if(IIC_Imu_Wait_Ack())
-	{
-		IIC_Imu_Stop();
-		return 1;
-	}
+	IIC_Imu_Wait_Ack();
 	IIC_Imu_Stop();
 	return 0;
 }
@@ -514,24 +516,29 @@ u8 IMU2_Write_Reg(u8 dev_Addr,u8 reg,u8 data)
 u8 IMU2_Read_Reg(u8 dev_Addr,u8 reg)
 {
 	u8 res;
+	u8 _addr_val = 0;
 	IIC_Imu_Start();
-	IIC_Imu_Send_Byte((dev_Addr << 1) | 0x00);
+	_addr_val = (dev_Addr << 1) | 0;
+	IIC_Imu_Send_Byte(_addr_val);
 	IIC_Imu_Wait_Ack();
 	IIC_Imu_Send_Byte(reg);
 	IIC_Imu_Wait_Ack();
 	IIC_Imu_Start();
-	IIC_Imu_Send_Byte((dev_Addr << 1) | 0x01);
+	_addr_val = (dev_Addr << 1) | 1;
+	IIC_Imu_Send_Byte(_addr_val);//读指令
 	IIC_Imu_Wait_Ack();
 	res = IIC_Imu_Read_Byte(0);
 	IIC_Imu_Stop();
 	return res;
 }
 
-//直接读取一个字节
+//写一个字节
 u8 IMU2_Write_Byte(u8 dev_Addr,u8 command)
 { 
+	u8 _addr_val = 0;
 	IIC_Imu_Start(); 
-	IIC_Imu_Send_Byte((dev_Addr << 1) | 0x00);
+	_addr_val = (dev_Addr << 1) | 0;
+	IIC_Imu_Send_Byte(_addr_val);
 	if(IIC_Imu_Wait_Ack())
 	{
 		IIC_Imu_Stop();
@@ -558,37 +565,41 @@ void HP203B_WriteAllReg(HP203x_CR_TypeDef *HP203B_CR_Struct) {
 }
 
 u8 ADXL357B_Init(void){
-		u8 ID = 0;
-		IIC_Imu_Init();
-		ADXL357B_Reset();
-		delay_ms(20);
-		ADXL357B_SetPowerCtr(0x00);//set to normal mode
-		ID = IMU2_Read_Reg(ACC_I2C_ADDRESS,POWER_CTR_REG_ADDR);
-		if (ID != 0x00) {
-			Led_Flash(1);
-			printf("%.4f\r\n",(double)ID);
-			//return -1;
-		}
-		delay_ms(20);
-		ADXL357B_SetRange(TEN_G);
-		delay_ms(20);
-		ADXL357B_SetFilter(0x33);//011--1.55*10^-4;0011--500Hz
-		delay_ms(20);
-		ADXL357B_SetActEnable(1, 1, 1);//enable x,y,z 3 axis
-		ADXL357B_GetStatus(ID);
+	u8 ID = 0;
+	IIC_Imu_Init();
+	ID = IMU2_Read_Reg(ACC_I2C_ADDRESS,DEV_MEMS_REG_ADDR);
+	if (ID != ACC_I2C_ADDRESS) {
+		LED2On();
 		printf("%.4f\r\n",(double)ID);
-		ID = IMU2_Read_Reg(ACC_I2C_ADDRESS,DEV_ID_REG_ADDR);
-		if (ID != 0xed) {
-			Led_Flash(1);
-			printf("%.4f\r\n",(double)ID);
-			//return -1;
-		}
-		delay_ms(20);
-		return 0;
+		return 1;
 	}
+	ADXL357B_Reset();
+	delay_ms(20);
+	ADXL357B_SetPowerCtr(0x00);//set to normal mode
+	/*ID = IMU2_Read_Reg(ACC_I2C_ADDRESS,POWER_CTR_REG_ADDR);
+	if (ID != 0x00) {
+		Led_Flash(2);
+		printf("%.4f\r\n",(double)ID);
+		return 1;
+	}*/
+	delay_ms(20);
+	ADXL357B_SetRange(TEN_G);
+	delay_ms(20);
+	ADXL357B_SetFilter(0x33);//011--1.55*10^-4;0011--500Hz
+	delay_ms(20);
+	ADXL357B_SetActEnable(1, 1, 1);//enable x,y,z 3 axis
+	/*ID = IMU2_Read_Reg(ACC_I2C_ADDRESS, DEV_ID_REG_ADDR);
+	if (ID != 0xed) {
+		Led_Flash(2);
+		printf("%.4f\r\n",(double)ID);
+		return 1;
+	}*/
+	delay_ms(20);
+	return 0;
+}
 
 /* Initialization sequence for HP203B sensor */
-void HP203B_Init(HP203x_CR_TypeDef *HP203B_CR_Struct, HP203x_TH_TypeDef *HP203B_TH_Struct) {
+/*void HP203B_Init(HP203x_CR_TypeDef *HP203B_CR_Struct, HP203x_TH_TypeDef *HP203B_TH_Struct) {
 //	INT0_GPIO->IO0IntEnR |= 1<<INT0_PIN;					// Enable rise interrupt for INT0
 //	INT1_GPIO->IO0IntEnR |= 1<<INT1_PIN;					// Enable rise interrupt for INT1
 	IIC_Imu_Init();
@@ -600,4 +611,4 @@ void HP203B_Init(HP203x_CR_TypeDef *HP203B_CR_Struct, HP203x_TH_TypeDef *HP203B_
 	}
 	HP203B_CR_StructInit(HP203B_CR_Struct, HP203B_TH_Struct);// Configure the structure of HP203B registers
 	HP203B_WriteAllReg(HP203B_CR_Struct);					// Copy this structure into internal registers of HP203B
-}
+}*/

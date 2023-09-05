@@ -3,8 +3,13 @@
 #include "spi.h"
 #include "flight_log.h"
 #include <math.h>
-#include <stdio.h>
 #include "led.h"
+#include "string.h"
+#if SYSTEM_SUPPORT_OS
+#include "FreeRTOS.h"					//FreeRTOSÊ¹ÓÃ		  
+#include "task.h"
+#endif
+#include "exfuns.h"
 
 
 
@@ -354,27 +359,3 @@ void IMU_Task(void *param)
 	}//end of while(1)
 
 }
-
-/*void Bmx_Convert_Data(struct Sensor *sensor){
-	// gyro convert, 16 bits
-	sensor->cov_tmp = ((int)sensor->gyro_x[1] << 8) | sensor->gyro_x[0];    // [0] is high bit, [1] is low bit
-	sensor->gyro_x_float = (float)sensor->cov_tmp * sensor->gyro_reso;
-	sensor->cov_tmp = ((int)sensor->gyro_y[1] << 8) | sensor->gyro_y[0];    // [0] is high bit, [1] is low bit
-	sensor->gyro_y_float = (float)sensor->cov_tmp * sensor->gyro_reso;
-	sensor->cov_tmp = ((int)sensor->gyro_z[1] << 8) | sensor->gyro_z[0];    // [0] is high bit, [1] is low bit
-	sensor->gyro_z_float = (float)sensor->cov_tmp * sensor->gyro_reso;
-	// accel convert, 12 bits
-	sensor->cov_tmp = (((int)sensor->accel_x[1] << 8) | sensor->accel_x[0]) >> 4;    // [0] is high bit, [1] is low bit
-	sensor->accel_x_float = (float)sensor->cov_tmp * sensor->accel_reso;
-	sensor->cov_tmp = (((int)sensor->accel_y[1] << 8) | sensor->accel_y[0]) >> 4;    // [0] is high bit, [1] is low bit
-	sensor->accel_y_float = (float)sensor->cov_tmp * sensor->accel_reso;
-	sensor->cov_tmp = (((int)sensor->accel_z[1] << 8) | sensor->accel_z[0]) >> 4;    // [0] is high bit, [1] is low bit
-	sensor->accel_z_float = (float)sensor->cov_tmp * sensor->accel_reso;
-	//mag convert, 13 bits for xy, 15 bits for z
-	sensor->cov_tmp = (((int)sensor->mag_x[1] << 8) | sensor->mag_x[0]) >> 3;    // [0] is high bit, [1] is low bit
-	sensor->mag_x_float = (float)sensor->cov_tmp * sensor->mag_reso;
-	sensor->cov_tmp = (((int)sensor->mag_y[1] << 8) | sensor->mag_y[0]) >> 3;    // [0] is high bit, [1] is low bit
-	sensor->mag_y_float = (float)sensor->cov_tmp * sensor->mag_reso;
-	sensor->cov_tmp = (((int)sensor->mag_z[1] << 8) | sensor->mag_z[0]) >> 1;    // [0] is high bit, [1] is low bit
-	sensor->mag_z_float = (float)sensor->cov_tmp * sensor->mag_reso;
-}*/

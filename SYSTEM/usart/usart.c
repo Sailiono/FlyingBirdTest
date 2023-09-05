@@ -3,12 +3,14 @@
 #include "hall.h" 
 #include "motor_steering.h"
 #include "string.h"
+
+
 ////////////////////////////////////////////////////////////////////////////////// 	 
 //如果使用FreeRTOS,则包括下面的头文件即可.
 #if SYSTEM_SUPPORT_OS
 #include "FreeRTOS.h"					//ucos 使用	  
 #endif
-
+#include "queue.h"
 
 #include "main.h"
 

@@ -1,5 +1,5 @@
-#ifndef ADXRS290_H_
-#define ADXRS290_H_
+#ifndef __ADXRS290_H
+#define __ADXRS290_H
 
 /******************************************************************************/
 /***************************** Include Files **********************************/
@@ -7,9 +7,7 @@
 
 #include <stdbool.h>
 #include "spi.h"
-#include "main.h"
 #include <stdio.h>
-#include "bsp_spi_ad7606.h"
 #include <math.h>
 #include "delay.h"
 #include "led.h"

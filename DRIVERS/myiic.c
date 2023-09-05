@@ -163,7 +163,7 @@ u8 IIC_Imu_Wait_Ack(void)
 u8 IIC_Wind_Wait_Ack(void)
 {
 	u8 ucErrTime=0;
-	SDA_Wind_IN();      //SDA设置为输入  
+	SDA_Wind_IN();      //SDA设置为输入
 	IIC_Wind_SDA=1;delay_us(1);	
 	IIC_Wind_SCL=1;delay_us(1);	
 	while(READ_Wind_SDA)
@@ -332,7 +332,7 @@ u8 IIC_Imu_Read_Byte(unsigned char ack)
         delay_us(2);
 	    IIC_Imu_SCL=1;
         receive<<=1;
-        if(READ_Imu_SDA)receive++;   
+        if(READ_Imu_SDA)receive++;
 		delay_us(1); 
     }					 
     if (!ack)
@@ -352,7 +352,7 @@ u8 IIC_Wind_Read_Byte(unsigned char ack)
         delay_us(2);
 	    IIC_Wind_SCL=1;
         receive<<=1;
-        if(READ_Wind_SDA)receive++;   
+        if(READ_Wind_SDA)receive++;
 		delay_us(1); 
     }					 
     if (!ack)
