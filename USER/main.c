@@ -49,7 +49,7 @@ int main(void)
 	//Sbus_Init();
 	//AdcInit();
 	Led_Flash(1);
-	bsp_InitAD7606();
+//	bsp_InitAD7606();
 //	AT24CXX_Init();			//IIC初始化
 	//HALL_Init();
 
@@ -59,10 +59,8 @@ int main(void)
 	while(f_mount(fs[0],"0:",1)!=0){printf("03");}; 	//挂载SD卡
 //	Adxrs290_Init();
 //	IMU_Init();
-	if(IMU2_Init() == 1){
-	printf("imu2");
-	return -1;}
-//	SM3041_Init();
+//	if(IMU2_Init() == 1){printf("imu2");return -1;}
+	SM3041_Init();
 	delay_ms(500);
 	xTaskCreate(start_task,"start_task",500,NULL,2,&StartTask_Handler);
 	vTaskStartScheduler();
@@ -79,11 +77,12 @@ void start_task(void *pvParameters)
 
 //	xTaskCreate(ad_task, "ad_task", 500, NULL, 6, NULL);
 //	xTaskCreate(IMU_Task, "imu_task", 500, NULL, 5, NULL);
-	xTaskCreate(IMU2_Task, "imu2_task", 500, NULL, 7, NULL);
+//	xTaskCreate(IMU2_Task, "imu2_task", 500, NULL, 7, NULL);
+//	xTaskCreate(GYRO2_Task, "gyro2_task", 500, NULL, 7, NULL);
 	//xTaskCreate(sbus_task, "sbus_task", 500, NULL, 8, NULL);
 	//xTaskCreate(hall_task, "hall_task", 500, NULL, 7, NULL);
 	//xTaskCreate(twostm_task, "twostm_task", 1000, NULL,9, NULL);
-//	xTaskCreate(windspeed_Task, "windspeed_task", 500, NULL, 5, NULL);
+	xTaskCreate(windspeed_Task, "windspeed_task", 500, NULL, 5, NULL);
 	vTaskDelete(StartTask_Handler); //删除开始任务
 	taskEXIT_CRITICAL();            //退出临界区
 }

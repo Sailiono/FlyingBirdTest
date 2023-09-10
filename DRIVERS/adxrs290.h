@@ -5,14 +5,8 @@
 /***************************** Include Files **********************************/
 /******************************************************************************/
 
-#include <stdbool.h>
-#include "spi.h"
-#include <stdio.h>
-#include <math.h>
-#include "delay.h"
-#include "led.h"
-#include "flight_log.h"
-#include "sbus.h"
+#include "stm32f4xx.h"
+#include "sys.h"
 
 /******************************************************************************/
 /********************** Macros and Constants Definitions **********************/
@@ -159,11 +153,15 @@ struct adxrs290_dev {
 /******************************************************************************/
 /************************ Functions Declarations ******************************/
 /******************************************************************************/
-
+void GYRO2_Task(void *param);
 void Adxrs290_Init(void);
-void Adxrs290_Reg_Write(u8 regAddr,u8 data);
-int64_t Adxrs290_Multi_Reg_Read(u8 regAddr,u8 bytes_to_read,s16* read_out_data);
+u8 Adxrs290_Reg_Write(u8 regAddr,u8 data);
+s8 * Adxrs290_Multi_Reg_Read(u8 regAddr,u8 bytes_to_read);
 void ADXRS290_task(void *param);
-s8 Adxrs290_Reg_Read(u8 regAddr,s8 data);
+s8 Adxrs290_Reg_Read(u8 regAddr);
+s16 * Adxrs290_ReadXYAxisResultData(void);
+s16 Adxrs290_ReadTempData(void);
+s16 *  Adxrs290_ReadAllData(void);
+int64_t SPI2_Read(u8 regAddr,u8 bytes_to_read);
 
 #endif /* ADXRS290_H_ */

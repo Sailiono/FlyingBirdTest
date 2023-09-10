@@ -411,7 +411,7 @@ void IMU2_Task(void *param)
 		{
 		output[i]=(float)(*(pp + i))/524288*10;
 		}
-		 if(!file_not_open_flag == true)
+		if(!file_not_open_flag == true)
 		// if(!file_not_open_flag && flightloggerbutton == true)
 		{
 			sprintf((char*)flight_log_buf,"%.4f , %.4f, %.4f\r\n",output[0],output[1],output[2]);
@@ -424,7 +424,7 @@ void IMU2_Task(void *param)
 			}
 			save_flag++;
 
-			}
+		}
 	}//end of while(1)
 
 }
@@ -479,8 +479,8 @@ u8 IMU2_Read_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
     IIC_Imu_Send_Byte(reg);	//写寄存器地址
     IIC_Imu_Wait_Ack();		//等待应答
     IIC_Imu_Start();
-	IIC_Imu_Send_Byte((dev_Addr<<1)|1);//发送器件地址+读命令	
-    IIC_Imu_Wait_Ack();		//等待应答 
+	IIC_Imu_Send_Byte((dev_Addr<<1)|1);//发送器件地址+读命令
+    IIC_Imu_Wait_Ack();		//等待应答
 	while(len)
 	{
 		if(len==1)*buf=IIC_Imu_Read_Byte(0);//读数据,发送nACK 
@@ -567,9 +567,36 @@ void HP203B_WriteAllReg(HP203x_CR_TypeDef *HP203B_CR_Struct) {
 u8 ADXL357B_Init(void){
 	u8 ID = 0;
 	IIC_Imu_Init();
+	u16 save_flag=0; 
+	static FIL printmeg;
+	static UINT outputmeg;
+	static char message[200];
+	char logname_buf[15] = "test.txt";
+	static bool file_not_open_flag = true;
 	ID = IMU2_Read_Reg(ACC_I2C_ADDRESS,DEV_MEMS_REG_ADDR);
 	if (ID != ACC_I2C_ADDRESS) {
 		LED2On();
+		if(file_not_open_flag)
+		{
+			sprintf((char*)logname_buf,"imu2_%lld.txt",FreeRTOSRunTimeTicks);
+			if(f_open(&printmeg,logname_buf,FA_OPEN_APPEND|FA_WRITE)==0)
+			{
+				file_not_open_flag = false;
+			}
+		}
+		if(!file_not_open_flag == true)
+		// if(!file_not_open_flag && flightloggerbutton == true)
+		{
+			sprintf((char*)message,"%.4f\r\n",(double)ID);
+			f_write(&printmeg,message,strlen(message),&outputmeg);
+			if(save_flag  %200==0)
+			{
+				f_sync(&printmeg);
+				save_flag=0;
+			}
+			save_flag++;
+
+		}
 		printf("%.4f\r\n",(double)ID);
 		return 1;
 	}
