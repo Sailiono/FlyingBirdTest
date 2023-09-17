@@ -157,12 +157,9 @@ s16 * Adxrs290_ReadXYAxisResultData(void)
 {
 	static s8 * data;
 	static s16* result;
-	static s16 temp;
 	data = Adxrs290_Multi_Reg_Read(ADXRS290_REG_DATAX0, 4);
 	*result = (u16)*(data +1) << 8 | *data;
 	*(result+1) = (u16)*(data +3) << 8 | *(data+2);
-	temp = *result;
-	temp = *(result+1);
 	return result;
 }
 
@@ -178,14 +175,10 @@ s16 * Adxrs290_ReadAllData(void)
 {
 	static s8* data;
 	static s16* result;
-	static s16 temp;
 
 	data = Adxrs290_Multi_Reg_Read(ADXRS290_REG_DATAX0, 6);
 	*result = (s16)*(data +1) << 8 | *data;			//X axis data
 	*(result+1) = (s16)*(data +3) << 8 | *(data+2);	//Y axis data
 	*(result+2) = (s16)*(data +5) << 8 | *(data+4); //temp data
-	temp = *result;
-	temp = *(result+1);
-	temp = *(result+2);
 	return result;
 }

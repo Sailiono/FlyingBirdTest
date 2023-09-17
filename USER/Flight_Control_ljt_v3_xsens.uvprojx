@@ -455,19 +455,9 @@
               <FilePath>..\DRIVERS\myiic.c</FilePath>
             </File>
             <File>
-              <FileName>adxrs290.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\DRIVERS\adxrs290.c</FilePath>
-            </File>
-            <File>
               <FileName>imu.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\DRIVERS\imu.c</FilePath>
-            </File>
-            <File>
-              <FileName>imu2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\DRIVERS\imu2.c</FilePath>
             </File>
             <File>
               <FileName>wind.c</FileName>
@@ -478,6 +468,11 @@
               <FileName>rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\DRIVERS\rtc.c</FilePath>
+            </File>
+            <File>
+              <FileName>acc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\DRIVERS\acc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -593,6 +588,11 @@
               <FileName>flight_log.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\MODULES\flight_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>attitude_estimate.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MODULES\attitude_estimate.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -187,7 +187,7 @@ void ad7606_Reset(void)
 	GPIO_ResetBits(GPIOA,GPIO_Pin_8);
 	GPIO_ResetBits(GPIOA,GPIO_Pin_8);
 	GPIO_ResetBits(GPIOA,GPIO_Pin_8);
-	printf("%d",GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_8));
+//	printf("%d",GPIO_ReadInputDataBit(GPIOA,GPIO_Pin_8));
 }	
 	
 /*

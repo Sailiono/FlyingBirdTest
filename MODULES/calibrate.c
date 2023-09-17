@@ -2,6 +2,7 @@
 #include "main.h"
 #include "radio.h"
 #include "DataTypeDefine.h"
+#include "semphr.h"
 
 SemaphoreHandle_t calibrateacc_binarysemaphore;		    //定义一个二值信号量变量
 SemaphoreHandle_t calibrategyro_binarysemaphore;		//定义一个二值信号量变量

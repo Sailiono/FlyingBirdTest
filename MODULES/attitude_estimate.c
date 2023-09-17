@@ -10,6 +10,12 @@
 #include "attitude_estimate.h"
 #include "main.h"
 #include "math.h"
+#include "sys.h"
+#include "myiic.h"
+#if SYSTEM_SUPPORT_OS
+#include "FreeRTOS.h"					//FreeRTOS π”√		  
+#include "task.h"
+#endif
 
 
 u32 tick=0;	
@@ -23,7 +29,7 @@ static IMURAWDATAFTypeDef imurawdataf;
     u32 rollu32,yawu32,pitchu32,accxu32,accyu32,acczu32,gyroxu32,gyroyu32,gyrozu32;
     float roll,yaw,pitch,accx,accy,accz,gyrox,gyroy,gyroz,accxtemp,accytemp,accztemp;
      
-    res=IIC_Read_Len_Byte(0x6B,0x06,47,xsensdata);
+    res=IIC_Imu_Read_Len(0x6B,0x06,47,xsensdata);
     if (res==0)
     {
         pitchu32 = (u32)((xsensdata[5]<<24)|(xsensdata[6]<<16)|(xsensdata[7]<<8)|(xsensdata[8])); 

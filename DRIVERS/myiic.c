@@ -108,7 +108,7 @@ void IIC_Rom_Start(void)
 void IIC_Imu_Stop(void)
 {
 	SDA_Imu_OUT();//sda线输出
-	IIC_Imu_SCL=1;
+	IIC_Imu_SCL=0;
 	IIC_Imu_SDA=0;//STOP:when CLK is high DATA change form low to high
  	delay_us(4);
 	IIC_Imu_SCL=1; 
@@ -442,7 +442,130 @@ u8 IIC_Rom_ReadLenByteWithoutReg(u8 addr,u8 len,u8 *buf)
 }
 
 
+//IIC连续写
+//addr:器件地址 
+//reg:寄存器地址
+//len:写入长度
+//buf:数据区
+//返回值:0,正常
+//    其他,错误代码
+u8 IIC_Imu_Write_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
+{
+	u8 i; 
+	IIC_Imu_Start(); 
+	IIC_Imu_Send_Byte((dev_Addr<<1) | 0);
+	if(IIC_Imu_Wait_Ack())
+	{
+		IIC_Imu_Stop();
+		return 1;
+	}
+	IIC_Imu_Send_Byte(reg);
+	IIC_Imu_Wait_Ack();
+	for(i=0;i<len;i++)
+	{
+		IIC_Imu_Send_Byte(buf[i]);
+		if(IIC_Imu_Wait_Ack())
+		{
+			IIC_Imu_Stop();
+			return 1;
+		}
+	}
+	IIC_Imu_Stop();	 
+	return 0;	
+} 
+//IIC连续读
+//addr:器件地址
+//reg:要读取的寄存器地址
+//len:要读取的长度
+//buf:读取到的数据存储区
+//返回值:0,正常
+//    其他,错误代码
+u8 IIC_Imu_Read_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf)
+{ 
+	IIC_Imu_Start(); 
+	IIC_Imu_Send_Byte((dev_Addr<<1)|0);//发送器件地址+写命令	
+	if(IIC_Imu_Wait_Ack())	//等待应答
+	{
+		IIC_Imu_Stop();		 
+		return 1;		
+	}
+    IIC_Imu_Send_Byte(reg);	//写寄存器地址
+    IIC_Imu_Wait_Ack();		//等待应答
+    IIC_Imu_Start();
+	IIC_Imu_Send_Byte((dev_Addr<<1)|1);//发送器件地址+读命令
+    IIC_Imu_Wait_Ack();		//等待应答
+	while(len)
+	{
+		if(len==1)*buf=IIC_Imu_Read_Byte(0);//读数据,发送nACK 
+		else *buf=IIC_Imu_Read_Byte(1);		//读数据,发送ACK  
+		len--;
+		buf++; 
+	}    
+    IIC_Imu_Stop();	//产生一个停止条件 
+	return 0;
+}
+//IIC写一个字节到寄存器
+//reg:寄存器地址
+//data:数据
+//返回值:0,正常
+//    其他,错误代码
+u8 IIC_Imu_Write_Reg(u8 dev_Addr,u8 reg,u8 data)
+{ 
+	u8 _addr_val = 0;
+	IIC_Imu_Start();
+	_addr_val = (dev_Addr << 1) | 0;
+	IIC_Imu_Send_Byte(_addr_val);//发送器件地址，使用写指令
+	IIC_Imu_Wait_Ack();
+	IIC_Imu_Send_Byte(reg);
+	IIC_Imu_Wait_Ack();
+	IIC_Imu_Send_Byte(data);
+	IIC_Imu_Wait_Ack();
+	IIC_Imu_Stop();
+	return 0;
+}
+//IIC从寄存器读一个字节 
+//reg:寄存器地址 
+//返回值:读到的数据
+u8 IIC_Imu_Read_Reg(u8 dev_Addr,u8 reg)
+{
+	u8 res;
+	u8 _addr_val = 0;
+	IIC_Imu_Start();
+	_addr_val = (dev_Addr << 1) | 0;
+	IIC_Imu_Send_Byte(_addr_val);
+	IIC_Imu_Wait_Ack();
+	IIC_Imu_Send_Byte(reg);
+	IIC_Imu_Wait_Ack();
+	IIC_Imu_Start();
+	_addr_val = (dev_Addr << 1) | 1;
+	IIC_Imu_Send_Byte(_addr_val);//读指令
+	IIC_Imu_Wait_Ack();
+	res = IIC_Imu_Read_Byte(0);
+	IIC_Imu_Stop();
+	return res;
+}
 
+//写一个字节
+u8 IIC_Imu_Write_Byte(u8 dev_Addr,u8 command)
+{ 
+	u8 _addr_val = 0;
+	IIC_Imu_Start(); 
+	_addr_val = (dev_Addr << 1) | 0;
+	IIC_Imu_Send_Byte(_addr_val);
+	if(IIC_Imu_Wait_Ack())
+	{
+		IIC_Imu_Stop();
+		return 1;
+	}
+	IIC_Imu_Send_Byte(command);
+	if(IIC_Imu_Wait_Ack())
+	{
+		IIC_Imu_Stop();
+		return 1;
+	}
+	IIC_Imu_Stop();
+	return 0;
+}
 
 
 

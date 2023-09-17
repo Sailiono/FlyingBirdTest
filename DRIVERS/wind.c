@@ -16,7 +16,7 @@ void windspeed_Task(void *param)
 {
 	u32 lastWakeTime = xTaskGetTickCount();
 //	int resultP = 0;
-	int *result;
+	int32_t *result;
 	float gyro_data = 0;
 	float temperature = 0;
 	u16 save_flag=0; 
@@ -39,8 +39,9 @@ void windspeed_Task(void *param)
 		}
 //		resultP = SM3041_Data_FetchBaro();
 		result = SM3041_Data_FetchAll();
-		gyro_data = (float)*result / 32768 * 100;        //caculate corrected windpressure
-		temperature = (float)*(result+1) / 32768 * 100;
+		gyro_data = (*result-1638)*34474/ (14745-1638)* 1000;        //caculate corrected windpressure
+		
+		temperature = ((float)(*(result+1)) *200/2047 - 50)*100;
 		if(!file_not_open_flag == true)
 		// if(!file_not_open_flag && flightloggerbutton == true)
 		{

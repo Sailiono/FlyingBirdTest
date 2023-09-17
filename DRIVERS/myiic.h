@@ -72,6 +72,16 @@ u8 IIC_Imu_ReadLenByteWithoutReg(u8 addr,u8 len,u8 *buf);
 u8 IIC_Wind_ReadLenByteWithoutReg(u8 addr,u8 len,u8 *buf);
 u8 IIC_Rom_ReadLenByteWithoutReg(u8 addr,u8 len,u8 *buf);
 
+u8 IIC_Imu_Write_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf);
+
+u8 IIC_Imu_Read_Len(u8 dev_Addr,u8 reg,u8 len,u8 *buf);
+
+u8 IIC_Imu_Write_Reg(u8 dev_Addr,u8 reg,u8 data);
+
+u8 IIC_Imu_Read_Reg(u8 dev_Addr,u8 reg);
+
+u8 IIC_Imu_Write_Byte(u8 dev_Addr,u8 command);
+
 void IIC_Imu_Write_One_Byte(u8 daddr,u8 addr,u8 data);
 void IIC_Imu_Write_One_Byte(u8 daddr,u8 addr,u8 data);
 void IIC_Imu_Write_One_Byte(u8 daddr,u8 addr,u8 data);
